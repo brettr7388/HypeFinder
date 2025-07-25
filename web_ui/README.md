@@ -1,119 +1,154 @@
 # HypeFinder Web UI
 
-A beautiful, modern web interface for HypeFinder that allows you to run scans and view results through your browser.
+A modern, responsive web interface for HypeFinder - AI-powered trending tickers detection from social media.
 
 ## Features
 
-- 🎨 **Modern UI**: Clean, responsive design with gradient backgrounds and smooth animations
-- 📊 **Real-time Results**: View trending tickers in a beautiful table format
-- ⚙️ **Configurable Scans**: Adjust sources, top N tickers, minimum mentions, and output format
-- 📈 **Visual Indicators**: Color-coded hype scores and sentiment analysis
-- 📱 **Mobile Friendly**: Responsive design that works on all devices
-- 🔄 **Live Status**: Real-time system status and API connectivity
+- 🎨 **Modern Dark Theme UI** - Beautiful, responsive design with dark mode
+- 📊 **Real-time Progress Tracking** - Visual progress bar during scans
+- 🔧 **Flexible Configuration** - Easy-to-use filters and settings
+- 📱 **Mobile Responsive** - Works perfectly on desktop and mobile devices
+- 🚀 **Fast & Efficient** - Optimized for performance
+- 📈 **Rich Data Visualization** - Card-based ticker display with detailed metrics
 
 ## Quick Start
 
-### Option 1: Using the Startup Script (Recommended)
+### Prerequisites
+
+Make sure you have the required Python packages installed:
 
 ```bash
-cd web_ui
-python3 start_web_ui.py
+pip install flask flask-cors pandas
 ```
 
-### Option 2: Manual Start
+### Starting the Web UI
 
-```bash
-cd web_ui
-pip3 install flask flask-cors
-python3 server.py
-```
+1. **From the project root:**
+   ```bash
+   python web_ui/start_web_ui.py
+   ```
 
-### Option 3: Using Live Server (Static Mode)
+2. **Or from the web_ui directory:**
+   ```bash
+   cd web_ui
+   python start_web_ui.py
+   ```
 
-If you prefer to use Live Server for the frontend only:
-
-1. Install the Live Server extension in VS Code
-2. Right-click on `index.html` and select "Open with Live Server"
-3. Note: API calls will not work in this mode, but you can see the UI
+3. **Open your browser** to the URL shown in the terminal (typically `http://localhost:8081`)
 
 ## Usage
 
-1. **Open your browser** to `http://localhost:8080`
-2. **Configure your scan**:
-   - Select data sources (Twitter, Reddit, or both)
-   - Set the number of top tickers to return
-   - Adjust minimum mentions threshold
-   - Choose output format
-3. **Click "Start Scan"** to run HypeFinder
-4. **View results** in the beautiful table below
+### Configuration Panel
+
+The sidebar contains all configuration options:
+
+- **Data Sources**: Select which platforms to scan (Twitter, Reddit)
+- **Top N Tickers**: Number of trending tickers to return (1-50)
+- **Minimum Mentions**: Filter tickers by minimum mention count
+- **Output Format**: Choose console, CSV, or both output formats
+
+### Dashboard
+
+The main dashboard shows:
+
+- **System Status**: Real-time status of API connections
+- **Progress Tracking**: Visual progress bar during scans
+- **Results Display**: Beautiful card-based ticker results
+- **Summary Statistics**: Key metrics and insights
+
+### Running a Scan
+
+1. Configure your desired settings in the sidebar
+2. Click "Start Scan" to begin the analysis
+3. Watch the progress bar as the system:
+   - Fetches data from selected sources
+   - Analyzes ticker mentions and sentiment
+   - Calculates hype scores
+   - Displays results
+
+### Understanding Results
+
+Each ticker card shows:
+
+- **Rank**: Position in trending list
+- **Ticker Symbol**: Stock/crypto symbol
+- **Hype Score**: Overall trending score (color-coded)
+- **Volume Score**: Activity level metric
+- **Sentiment Score**: Positive/negative sentiment
+- **Mentions**: Total mention count
+- **Platforms**: Sources where ticker was found
 
 ## API Endpoints
 
-The web UI communicates with HypeFinder through these REST API endpoints:
+The web UI provides several REST API endpoints:
 
-- `GET /api/status` - Get system and API status
-- `POST /api/scan` - Run a HypeFinder scan
-- `GET /api/config` - Get current configuration
-
-## Features Explained
-
-### Hype Score Colors
-- 🟢 **Green (High)**: Hype score ≥ 1.0
-- 🟡 **Orange (Medium)**: Hype score 0.5-0.99
-- 🔴 **Red (Low)**: Hype score < 0.5
-
-### Sentiment Colors
-- 🟢 **Green**: Positive sentiment (> 0.1)
-- 🔴 **Red**: Negative sentiment (< -0.1)
-- ⚪ **Gray**: Neutral sentiment (-0.1 to 0.1)
-
-### Summary Cards
-- **Tickers Analyzed**: Total number of tickers found
-- **Total Mentions**: Combined mentions across all platforms
-- **Average Hype Score**: Mean hype score of all tickers
-- **Top Ticker**: Highest-scoring ticker with its score
+- `GET /api/health` - Health check
+- `GET /api/status` - System and API status
+- `GET /api/config` - Current configuration
+- `GET /api/history` - Scan history
+- `POST /api/scan` - Run a new scan
 
 ## Troubleshooting
 
-### "Flask not found" Error
-```bash
-pip3 install flask flask-cors
-```
+### Port Already in Use
 
-### "Port 8080 already in use" Error
-The server will automatically try to find an available port, or you can modify `server.py` to use a different port.
+The startup script automatically finds an available port. If you see port conflicts:
 
-### API Connection Errors
-Make sure HypeFinder is properly configured with valid API credentials in your `.env` file.
+1. Stop any existing servers
+2. Restart the web UI
+3. The script will automatically use the next available port
 
-### No Results Showing
-- Check that your API credentials are valid
-- Try reducing the minimum mentions threshold
-- Ensure the selected data sources are working
+### API Connection Issues
+
+If you see "Error" status for Twitter or Reddit:
+
+1. Check your API credentials in the `.env` file
+2. Ensure your API keys are valid and have proper permissions
+3. Verify internet connectivity
+
+### No Results Found
+
+If scans return no results:
+
+1. Check your API credentials
+2. Try reducing the "Minimum Mentions" filter
+3. Ensure your data sources are properly configured
+4. Check the console output for detailed error messages
 
 ## Development
 
-The web UI consists of:
-- `index.html` - Main HTML file with embedded CSS and JavaScript
-- `server.py` - Flask API server that interfaces with HypeFinder
-- `start_web_ui.py` - Convenient startup script
+### File Structure
 
-To modify the UI:
-- Edit `index.html` for frontend changes
-- Edit `server.py` for API changes
-- The UI uses vanilla JavaScript - no build process required!
+```
+web_ui/
+├── index.html          # Main UI interface
+├── server.py           # Flask API server
+├── start_web_ui.py     # Startup script
+└── README.md           # This file
+```
+
+### Customization
+
+The UI is built with vanilla HTML, CSS, and JavaScript. Key files to modify:
+
+- `index.html` - Main interface and styling
+- `server.py` - API endpoints and backend logic
+- CSS variables in `index.html` - Theme colors and styling
+
+### Adding New Features
+
+1. **Frontend**: Add new UI elements to `index.html`
+2. **Backend**: Add new API endpoints to `server.py`
+3. **Integration**: Connect frontend to backend via JavaScript
 
 ## Browser Compatibility
 
-- ✅ Chrome/Chromium
+- ✅ Chrome/Chromium (recommended)
 - ✅ Firefox
 - ✅ Safari
 - ✅ Edge
-- ✅ Mobile browsers
+- ❌ Internet Explorer (not supported)
 
-## Security Notes
+## License
 
-- The web server runs on localhost only
-- No authentication is required (intended for local use)
-- API credentials are not exposed to the frontend
-- All API calls go through the backend server 
+This web UI is part of the HypeFinder project and follows the same license terms. 

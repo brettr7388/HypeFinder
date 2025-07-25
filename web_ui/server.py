@@ -83,6 +83,13 @@ def api_scan():
         min_mentions = data.get('minMentions', 1)
         output_format = data.get('outputFormat', 'console')
         
+        # Validate sources
+        if not sources:
+            return jsonify({
+                'success': False,
+                'error': 'At least one data source must be selected'
+            }), 400
+        
         # Build the command
         cmd = ['python3', 'main.py', 'scan']
         
@@ -96,6 +103,8 @@ def api_scan():
             '--min-mentions', str(min_mentions),
             '--output', output_format
         ])
+        
+        print(f"Running command: {' '.join(cmd)}")
         
         # Run the scan
         result = subprocess.run(
@@ -125,7 +134,7 @@ def api_scan():
         for line in lines:
             line = line.strip()
             
-            # Look for table start
+            # Look for table start - the actual format from CLI output
             if '🔥 Top' in line and 'Trending Tickers' in line:
                 in_table = True
                 continue
@@ -135,16 +144,17 @@ def api_scan():
                 in_table = False
                 break
                 
-            # Parse table rows - look for lines with pipe separators and numbers
-            if in_table and '|' in line and not line.startswith('=') and not line.startswith('Rank') and not line.startswith('--'):
-                # Split by pipe and clean up
-                parts = [p.strip() for p in line.split('|') if p.strip()]
+            # Parse table rows - the actual format has spaces, not pipes
+            if in_table and not line.startswith('=') and not line.startswith('Rank') and not line.startswith('--') and len(line) > 10:
+                # The format is: "1    $BTC     1.475    1.177    0.165      36       reddit,redd"
+                # Split by multiple spaces and filter out empty strings
+                parts = [p for p in line.split('  ') if p.strip()]
                 
                 # Debug: print the parts we're trying to parse
                 print(f"Parsing line: {line}")
                 print(f"Parts: {parts}")
                 
-                if len(parts) >= 7:
+                if len(parts) >= 6:
                     try:
                         # Clean up the ticker name (remove any extra spaces)
                         ticker_name = parts[1].strip()
@@ -156,7 +166,7 @@ def api_scan():
                             'volume_score': float(parts[3]),
                             'sentiment_score': float(parts[4]),
                             'mentions': int(parts[5]),
-                            'platforms': [p.strip() for p in parts[6].split(',')]
+                            'platforms': [p.strip() for p in parts[6].split(',')] if len(parts) > 6 else []
                         }
                         tickers.append(ticker_data)
                         print(f"Successfully parsed ticker: {ticker_name}")
@@ -197,9 +207,10 @@ def api_scan():
             # Try to extract from the raw output more aggressively
             lines = output.split('\n')
             for line in lines:
-                if '|' in line and not line.startswith('=') and not line.startswith('Rank') and not line.startswith('--'):
-                    parts = [p.strip() for p in line.split('|') if p.strip()]
-                    if len(parts) >= 7:
+                if not line.startswith('=') and not line.startswith('Rank') and not line.startswith('--') and len(line) > 10:
+                    # Try space-based parsing
+                    parts = [p for p in line.split('  ') if p.strip()]
+                    if len(parts) >= 6:
                         try:
                             ticker_data = {
                                 'rank': int(parts[0]),
@@ -208,7 +219,7 @@ def api_scan():
                                 'volume_score': float(parts[3]),
                                 'sentiment_score': float(parts[4]),
                                 'mentions': int(parts[5]),
-                                'platforms': [p.strip() for p in parts[6].split(',')]
+                                'platforms': [p.strip() for p in parts[6].split(',')] if len(parts) > 6 else []
                             }
                             tickers.append(ticker_data)
                         except (ValueError, IndexError) as e:
@@ -250,11 +261,49 @@ def api_config():
             'error': str(e)
         }), 500
 
+@app.route('/api/history')
+def api_history():
+    """Get scan history from CSV file"""
+    try:
+        history_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'hype_history.csv')
+        
+        if not os.path.exists(history_file):
+            return jsonify({
+                'success': True,
+                'data': []
+            })
+        
+        import pandas as pd
+        df = pd.read_csv(history_file)
+        
+        # Convert to list of dictionaries
+        history = df.to_dict('records')
+        
+        return jsonify({
+            'success': True,
+            'data': history[-20:]  # Return last 20 entries
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/health')
+def api_health():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat(),
+        'version': '1.0.0'
+    })
+
 if __name__ == '__main__':
     print("🚀 Starting HypeFinder Web Server...")
-    print("📱 Open your browser to: http://localhost:8080")
-    print("🔧 API endpoints available at: http://localhost:8080/api/")
+    print("📱 Open your browser to: http://localhost:8082")
+    print("🔧 API endpoints available at: http://localhost:8082/api/")
     print("⏹️  Press Ctrl+C to stop the server")
     print()
     
-    app.run(debug=True, host='0.0.0.0', port=8080) 
+    app.run(debug=True, host='0.0.0.0', port=8082) 
