@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HypeFinder - Trending Tickers Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .control-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-item label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .control-item select,
+        .control-item input {
+            padding: 10px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .control-item select:focus,
+        .control-item input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .status-icon.success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-icon.error {
+            background: #f44336;
+            color: white;
+        }
+
+        .status-icon.warning {
+            background: #ff9800;
+            color: white;
+        }
+
+        .results {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .ticker-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .ticker-table th,
+        .ticker-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .ticker-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .ticker-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .hype-score {
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .hype-high {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .hype-medium {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .hype-low {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .sentiment-positive {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .sentiment-negative {
+            color: #f44336;
+            font-weight: 600;
+        }
+
+        .sentiment-neutral {
+            color: #666;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .summary-card .value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #f44336;
+        }
+
+        .success-message {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #4CAF50;
+        }
+
+        @media (max-width: 768px) {
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .ticker-table {
+                font-size: 14px;
+            }
+            
+            .ticker-table th,
+            .ticker-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> HypeFinder</h1>
+            <p>Real-time trending tickers from social media</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <div class="control-item">
+                    <label for="sources">Data Sources</label>
+                    <select id="sources" multiple>
+                        <option value="twitter" selected>Twitter</option>
+                        <option value="reddit" selected>Reddit</option>
+                    </select>
+                </div>
+                <div class="control-item">
+                    <label for="topN">Top N Tickers</label>
+                    <input type="number" id="topN" value="10" min="1" max="50">
+                </div>
+                <div class="control-item">
+                    <label for="minMentions">Min Mentions</label>
+                    <input type="number" id="minMentions" value="1" min="1">
+                </div>
+                <div class="control-item">
+                    <label for="outputFormat">Output Format</label>
+                    <select id="outputFormat">
+                        <option value="console">Console</option>
+                        <option value="csv">CSV</option>
+                        <option value="both">Both</option>
+                    </select>
+                </div>
+            </div>
+            <button id="scanBtn" class="btn">
+                <i class="fas fa-search"></i> Start Scan
+            </button>
+        </div>
+
+        <div class="status" id="statusSection">
+            <h3><i class="fas fa-info-circle"></i> System Status</h3>
+            <div id="statusItems">
+                <div class="status-item">
+                    <div class="status-icon success"><i class="fas fa-check"></i></div>
+                    <span>Ready to scan</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="results" id="resultsSection" style="display: none;">
+            <div class="results-header">
+                <div class="results-title">
+                    <i class="fas fa-fire"></i> Trending Tickers
+                </div>
+                <div id="lastUpdated"></div>
+            </div>
+            
+            <div id="resultsContent">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class HypeFinderUI {
+            constructor() {
+                this.scanBtn = document.getElementById('scanBtn');
+                this.resultsSection = document.getElementById('resultsSection');
+                this.resultsContent = document.getElementById('resultsContent');
+                this.statusItems = document.getElementById('statusItems');
+                this.lastUpdated = document.getElementById('lastUpdated');
+                
+                this.bindEvents();
+                this.updateStatus();
+            }
+
+            bindEvents() {
+                this.scanBtn.addEventListener('click', () => this.startScan());
+            }
+
+            async updateStatus() {
+                try {
+                    const response = await fetch('/api/status');
+                    const status = await response.json();
+                    
+                    this.statusItems.innerHTML = '';
+                    
+                    // Add status items
+                    if (status.twitter) {
+                        this.addStatusItem('Twitter API', status.twitter === 'Valid', 'Twitter API connection');
+                    }
+                    if (status.reddit) {
+                        this.addStatusItem('Reddit API', status.reddit === 'Valid', 'Reddit API connection');
+                    }
+                    
+                    this.addStatusItem('System', true, 'Ready to scan');
+                    
+                } catch (error) {
+                    this.addStatusItem('System', false, 'Error checking status');
+                }
+            }
+
+            addStatusItem(label, success, message) {
+                const item = document.createElement('div');
+                item.className = 'status-item';
+                
+                const icon = document.createElement('div');
+                icon.className = `status-icon ${success ? 'success' : 'error'}`;
+                icon.innerHTML = success ? '<i class="fas fa-check"></i>' : '<i class="fas fa-times"></i>';
+                
+                const text = document.createElement('span');
+                text.textContent = `${label}: ${message}`;
+                
+                item.appendChild(icon);
+                item.appendChild(text);
+                this.statusItems.appendChild(item);
+            }
+
+            async startScan() {
+                this.scanBtn.disabled = true;
+                this.scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scanning...';
+                
+                const sources = Array.from(document.getElementById('sources').selectedOptions).map(opt => opt.value);
+                const topN = document.getElementById('topN').value;
+                const minMentions = document.getElementById('minMentions').value;
+                const outputFormat = document.getElementById('outputFormat').value;
+                
+                try {
+                    const response = await fetch('/api/scan', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sources,
+                            topN: parseInt(topN),
+                            minMentions: parseInt(minMentions),
+                            outputFormat
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.displayResults(result.data);
+                    } else {
+                        this.showError(result.error || 'Scan failed');
+                    }
+                    
+                } catch (error) {
+                    this.showError('Network error: ' + error.message);
+                } finally {
+                    this.scanBtn.disabled = false;
+                    this.scanBtn.innerHTML = '<i class="fas fa-search"></i> Start Scan';
+                }
+            }
+
+            displayResults(data) {
+                this.resultsSection.style.display = 'block';
+                
+                const now = new Date().toLocaleString();
+                this.lastUpdated.innerHTML = `Last updated: ${now}`;
+                
+                let html = '';
+                
+                if (data.tickers && data.tickers.length > 0) {
+                    html += `
+                        <table class="ticker-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Ticker</th>
+                                    <th>Hype Score</th>
+                                    <th>Volume</th>
+                                    <th>Sentiment</th>
+                                    <th>Mentions</th>
+                                    <th>Platforms</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.tickers.forEach((ticker, index) => {
+                        const hypeClass = this.getHypeClass(ticker.hype_score);
+                        const sentimentClass = this.getSentimentClass(ticker.sentiment_score);
+                        
+                        html += `
+                            <tr>
+                                <td><strong>${index + 1}</strong></td>
+                                <td><strong>${ticker.ticker}</strong></td>
+                                <td><span class="hype-score ${hypeClass}">${ticker.hype_score.toFixed(3)}</span></td>
+                                <td>${ticker.volume_score.toFixed(3)}</td>
+                                <td class="${sentimentClass}">${ticker.sentiment_score.toFixed(3)}</td>
+                                <td>${ticker.mentions}</td>
+                                <td>${ticker.platforms.join(', ')}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += '</tbody></table>';
+                    
+                    // Add summary
+                    if (data.summary) {
+                        html += `
+                            <div class="summary">
+                                <div class="summary-card">
+                                    <h3>Tickers Analyzed</h3>
+                                    <div class="value">${data.summary.tickers_analyzed}</div>
+                                </div>
+                                <div class="summary-card">
+                                    <h3>Total Mentions</h3>
+                                    <div class="value">${data.summary.total_mentions}</div>
+                                </div>
+                                <div class="summary-card">
+                                    <h3>Average Hype Score</h3>
+                                    <div class="value">${data.summary.average_hype_score.toFixed(3)}</div>
+                                </div>
+                                <div class="summary-card">
+                                    <h3>Top Ticker</h3>
+                                    <div class="value">${data.summary.top_ticker}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                } else {
+                    html = '<div class="loading"><p>No tickers found matching criteria</p></div>';
+                }
+                
+                this.resultsContent.innerHTML = html;
+            }
+
+            getHypeClass(score) {
+                if (score >= 1.0) return 'hype-high';
+                if (score >= 0.5) return 'hype-medium';
+                return 'hype-low';
+            }
+
+            getSentimentClass(score) {
+                if (score > 0.1) return 'sentiment-positive';
+                if (score < -0.1) return 'sentiment-negative';
+                return 'sentiment-neutral';
+            }
+
+            showError(message) {
+                this.resultsSection.style.display = 'block';
+                this.resultsContent.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Error:</strong> ${message}
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize the UI when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new HypeFinderUI();
+        });
+    </script>
+</body>
+</html> 

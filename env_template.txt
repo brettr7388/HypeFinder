@@ -1,0 +1,33 @@
+# Copy this file to .env and fill in your credentials
+
+# Twitter API Credentials
+TWITTER_API_KEY=your_twitter_api_key
+TWITTER_API_SECRET=your_twitter_api_secret
+TWITTER_ACCESS_TOKEN=your_twitter_access_token
+TWITTER_ACCESS_TOKEN_SECRET=your_twitter_access_token_secret
+TWITTER_BEARER_TOKEN=your_twitter_bearer_token
+
+# Reddit API Credentials
+REDDIT_CLIENT_ID=your_reddit_client_id
+REDDIT_CLIENT_SECRET=your_reddit_client_secret
+REDDIT_USER_AGENT=HypeFinder/1.0
+
+# Scoring Configuration
+VOLUME_WEIGHT=0.7
+SENTIMENT_WEIGHT=0.3
+TOP_N_TICKERS=20
+MIN_MENTIONS=5
+
+# Scraping Configuration
+MAX_POSTS_PER_SUBREDDIT=100
+MAX_TWEETS=100
+RATE_LIMIT_DELAY=1
+REQUEST_TIMEOUT=30
+
+# Output Configuration
+OUTPUT_FORMAT=console
+OUTPUT_FILE=hype_results.csv
+LOG_LEVEL=INFO
+
+# Optional: Path to additional JSON config file
+CONFIG_FILE=config.json 
