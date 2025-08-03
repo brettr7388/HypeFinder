@@ -74,8 +74,7 @@ class TickerParser:
             'TALK', 'BIRD', 'SOON', 'BODY', 'MUSIC', 'LEAVE', 'FAMILY', 'STARTED',
             'REALLY', 'HIGH', 'FIELD', 'SEVERAL', 'DURING', 'POSSIBLE', 'CAME',
             # Add the problematic words you found
-            'TERM', 'CALLS', 'PER', 'FEW', 'MORE', 'TRUMP'
-        }
+            'TERM', 'CALLS', 'PER', 'FEW', 'MORE', 'TRUMP' , 'BNB' , 'IN' , 'DYING' , 'AN' , 'DD' , 'ETH' , 'BTC' , 'AT' , 'DOT' , 'NICE' , 'AS' , 'MOONS' , 'VISAS' , 'RTA' , 'RATES' , 'POST' , 'LINK' , 'BUY' , 'BY' , 'LESS' , 'TECH' , 'LYC' , 'BEACH' , 'RANGE' , 'TO' , 'STUFF' , 'COVID' , 'OF' , 'USING' , 'AHEAD' , 'VALID'         }
         
         # Common stock exchange suffixes to remove
         self.exchange_suffixes = {'.TO', '.V', '.L', '.PA', '.DE', '.HK'}
